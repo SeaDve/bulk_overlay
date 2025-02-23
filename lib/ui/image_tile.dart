@@ -47,18 +47,12 @@ class _ImageTileState extends State<ImageTile> {
                   }
 
                   return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
+                    child: SizedBox(
+                      width: 240,
+                      height: 80,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Center(child: CircularProgressIndicator()),
                       ),
                     ),
                   );
