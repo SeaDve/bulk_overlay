@@ -23,7 +23,7 @@ class Home extends StatelessWidget {
                 TextButton.icon(
                   icon: Icon(Icons.file_copy),
                   label: Text(
-                    "Add Image(s)",
+                    "Add image(s)",
                     textAlign: TextAlign.center,
                     maxLines: 2,
                   ),
@@ -38,7 +38,7 @@ class Home extends StatelessWidget {
                       icon: Icon(Icons.file_copy),
                       label: Text(
                         viewModel.overlayImagePath == null
-                            ? "Select Overlay Image"
+                            ? "Select overlay image"
                             : path.basename(viewModel.overlayImagePath!),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -100,7 +100,7 @@ class Home extends StatelessWidget {
                   TextButton.icon(
                     icon: Icon(Icons.delete),
                     label: Text(
-                      "Remove All Image(s)",
+                      "Remove all image(s)",
                       textAlign: TextAlign.center,
                       maxLines: 2,
                     ),
@@ -122,7 +122,7 @@ class Home extends StatelessWidget {
                   icon: Icon(Icons.folder),
                   label: Text(
                     viewModel.outputFolder == null
-                        ? "Select Output Folder"
+                        ? "Select output folder"
                         : "${viewModel.outputFolder}",
                     textAlign: TextAlign.center,
                     maxLines: 2,
@@ -142,8 +142,8 @@ class Home extends StatelessWidget {
                         return Text('Images saved successfully');
                       } else {
                         return SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 24,
+                          height: 24,
                           child: CircularProgressIndicator(
                             value: viewModel.saveProgress,
                           ),
@@ -160,7 +160,7 @@ class Home extends StatelessWidget {
                               : null,
                       icon: Icon(Icons.save),
                       label: Text(
-                        "Save Image(s)",
+                        "Save image(s)",
                         textAlign: TextAlign.center,
                         maxLines: 2,
                       ),
