@@ -7,3 +7,4 @@ A new Flutter project.
 2. Use CSD
 3. Add a way to offset base image, image filters/effects
 4. Memoize overlay image
+5. Save state
