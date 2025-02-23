@@ -3,10 +3,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/image_processor.dart' as image_processor;
 
 class HomeViewModel extends ChangeNotifier {
+  HomeViewModel() {
+    _loadState();
+  }
+
+  final _prefs = SharedPreferencesAsync();
+
   final _imagePaths = <String, ui.Image?>{};
   Map<String, ui.Image?> get imagePaths => Map.unmodifiable(_imagePaths);
 
@@ -30,6 +37,19 @@ class HomeViewModel extends ChangeNotifier {
 
   String? getImagePathAt(int index) => _imagePaths.keys.elementAtOrNull(index);
 
+  Future<void> _loadState() async {
+    final imagePaths = await _prefs.getStringList('imagePaths');
+    if (imagePaths != null) {
+      addImagePaths(imagePaths);
+    }
+
+    final overlayImagePath = await _prefs.getString('overlayImagePath');
+    setOverlayImagePath(overlayImagePath, updatePrefs: false);
+
+    var outputFolder = await _prefs.getString('outputFolder');
+    setOutputFolder(outputFolder);
+  }
+
   Future<ui.Image?> getImage(String imagePath) async {
     if (_imagePaths[imagePath] != null) {
       return _imagePaths[imagePath];
@@ -44,13 +64,17 @@ class HomeViewModel extends ChangeNotifier {
     return image.values.first;
   }
 
-  void addImages(List<String> paths) {
+  void addImagePaths(List<String> paths, {updatePrefs = true}) {
     _imagePaths.addEntries(paths.map((path) => MapEntry(path, null)));
 
     _saveProgress = null;
     _saveError = null;
 
     notifyListeners();
+
+    if (updatePrefs) {
+      _prefs.setStringList('imagePaths', _imagePaths.keys.toList());
+    }
   }
 
   void removeImage(String imagePath) {
@@ -71,7 +95,7 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setOverlayImagePath(String? value) {
+  void setOverlayImagePath(String? value, {updatePrefs = true}) {
     _overlayImagePath = value;
 
     for (final imagePath in _imagePaths.keys) {
@@ -82,6 +106,14 @@ class HomeViewModel extends ChangeNotifier {
     _saveError = null;
 
     notifyListeners();
+
+    if (updatePrefs) {
+      if (value == null) {
+        _prefs.remove('overlayImagePath');
+      } else {
+        _prefs.setString('overlayImagePath', value);
+      }
+    }
   }
 
   void setOutputFolder(String? value) {
@@ -100,7 +132,7 @@ class HomeViewModel extends ChangeNotifier {
     );
 
     if (result != null) {
-      addImages(result.files.map((file) => file.path!).toList());
+      addImagePaths(result.files.map((file) => file.path!).toList());
     }
   }
 
