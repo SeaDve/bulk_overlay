@@ -6,8 +6,6 @@ import 'package:path/path.dart' as path;
 
 import '../data/image_processor.dart' as image_processor;
 
-// TODO Optimize for many images, limit the number of images loaded at once
-
 class HomeViewModel extends ChangeNotifier {
   final _imagePaths = <String, ui.Image?>{};
   Map<String, ui.Image?> get imagePaths => Map.unmodifiable(_imagePaths);
