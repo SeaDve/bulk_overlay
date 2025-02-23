@@ -44,6 +44,15 @@ class HomeViewModel extends ChangeNotifier {
     return image.values.first;
   }
 
+  void addImages(List<String> paths) {
+    _imagePaths.addEntries(paths.map((path) => MapEntry(path, null)));
+
+    _saveProgress = null;
+    _saveError = null;
+
+    notifyListeners();
+  }
+
   void removeImage(String imagePath) {
     _imagePaths.remove(imagePath);
 
@@ -62,26 +71,8 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addImages() async {
-    final result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Select Image(s)',
-      allowMultiple: true,
-    );
-
-    if (result != null) {
-      _imagePaths.addEntries(
-        result.files.map((file) => MapEntry(file.path!, null)),
-      );
-
-      _saveProgress = null;
-      _saveError = null;
-
-      notifyListeners();
-    }
-  }
-
-  void removeOverlayImage() {
-    _overlayImagePath = null;
+  void setOverlayImagePath(String? value) {
+    _overlayImagePath = value;
 
     for (final imagePath in _imagePaths.keys) {
       _imagePaths[imagePath] = null;
@@ -93,6 +84,26 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setOutputFolder(String? value) {
+    _outputFolder = value;
+
+    _saveProgress = null;
+    _saveError = null;
+
+    notifyListeners();
+  }
+
+  Future<void> selectImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select Image(s)',
+      allowMultiple: true,
+    );
+
+    if (result != null) {
+      addImages(result.files.map((file) => file.path!).toList());
+    }
+  }
+
   Future<void> selectOverlayImage() async {
     final result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Select Overlay Image',
@@ -101,17 +112,7 @@ class HomeViewModel extends ChangeNotifier {
 
     if (result != null) {
       assert(result.isSinglePick);
-
-      _overlayImagePath = result.files.first.path;
-
-      for (final imagePath in _imagePaths.keys) {
-        _imagePaths[imagePath] = null;
-      }
-
-      _saveProgress = null;
-      _saveError = null;
-
-      notifyListeners();
+      setOverlayImagePath(result.files.first.path);
     }
   }
 
@@ -121,12 +122,7 @@ class HomeViewModel extends ChangeNotifier {
     );
 
     if (result != null) {
-      _outputFolder = result;
-
-      _saveProgress = null;
-      _saveError = null;
-
-      notifyListeners();
+      setOutputFolder(result);
     }
   }
 

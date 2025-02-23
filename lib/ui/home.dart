@@ -29,7 +29,7 @@ class Home extends StatelessWidget {
                     maxLines: 2,
                   ),
                   onPressed: () async {
-                    await viewModel.addImages();
+                    await viewModel.selectImages();
                   },
                 ),
                 Row(
@@ -55,7 +55,7 @@ class Home extends StatelessWidget {
                           viewModel.overlayImagePath != null &&
                                   viewModel.canRemoveImages
                               ? () {
-                                viewModel.removeOverlayImage();
+                                viewModel.setOverlayImagePath(null);
                               }
                               : null,
                     ),
