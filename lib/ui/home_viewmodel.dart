@@ -30,13 +30,9 @@ class HomeViewModel extends ChangeNotifier {
   String? _saveError;
   String? get saveError => _saveError;
 
-  Future<ui.Image?> getImageAt(int index) async {
-    final imagePath = _imagePaths.keys.elementAtOrNull(index);
+  String? getImagePathAt(int index) => _imagePaths.keys.elementAtOrNull(index);
 
-    if (imagePath == null) {
-      return null;
-    }
-
+  Future<ui.Image?> getImage(String imagePath) async {
     if (_imagePaths[imagePath] != null) {
       return _imagePaths[imagePath];
     }
@@ -50,14 +46,8 @@ class HomeViewModel extends ChangeNotifier {
     return image.values.first;
   }
 
-  void removeImageAt(int index) {
-    final key = _imagePaths.keys.elementAtOrNull(index);
-
-    if (key == null) {
-      return;
-    }
-
-    _imagePaths.remove(key);
+  void removeImage(String imagePath) {
+    _imagePaths.remove(imagePath);
 
     _saveProgress = null;
     _saveError = null;

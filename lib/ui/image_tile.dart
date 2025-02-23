@@ -4,13 +4,15 @@ import 'dart:ui' as ui;
 class ImageTile extends StatefulWidget {
   const ImageTile({
     super.key,
+    required this.imagePath,
     required this.imageFuture,
-    required this.onDelete,
+    required this.onRemove,
   });
 
+  final String imagePath;
   final Future<ui.Image?> imageFuture;
 
-  final VoidCallback? onDelete;
+  final VoidCallback? onRemove;
 
   @override
   State<ImageTile> createState() => _ImageTileState();
@@ -21,8 +23,8 @@ class _ImageTileState extends State<ImageTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+    return Tooltip(
+      message: widget.imagePath,
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: MouseRegion(
@@ -38,22 +40,20 @@ class _ImageTileState extends State<ImageTile> {
                   }
 
                   if (snapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Error: ${snapshot.error}'),
-                      ),
+                    return Container(
+                      padding: EdgeInsets.all(8.0),
+                      alignment: Alignment.center,
+                      child: Text('Error: ${snapshot.error}'),
                     );
                   }
 
                   return Center(
-                    child: SizedBox(
+                    child: Container(
                       width: 240,
                       height: 80,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
+                      padding: const EdgeInsets.all(12.0),
+                      alignment: Alignment.center,
+                      child: Center(child: CircularProgressIndicator()),
                     ),
                   );
                 },
@@ -67,7 +67,7 @@ class _ImageTileState extends State<ImageTile> {
                   duration: Duration(milliseconds: 200),
                   child: IconButton.filled(
                     icon: Icon(Icons.delete),
-                    onPressed: widget.onDelete,
+                    onPressed: widget.onRemove,
                   ),
                 ),
               ),

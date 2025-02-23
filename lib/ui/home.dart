@@ -12,7 +12,8 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: Column(
           spacing: 24,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -62,57 +63,72 @@ class Home extends StatelessWidget {
                 ),
               ],
             ),
-            Container(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                spacing: 8,
-                children: [
-                  Center(
-                    child:
-                        viewModel.imagePaths.isEmpty
-                            ? Text('No image added')
-                            : Text(
-                              '${viewModel.imagePaths.length} image(s) added',
-                            ),
-                  ),
-                  viewModel.imagePaths.isNotEmpty
-                      ? SizedBox(
-                        height: 200,
-                        child: ListView.builder(
-                          restorationId: 'processed_image_list',
-                          scrollDirection: Axis.horizontal,
-                          itemCount: viewModel.imagePaths.length,
-                          itemBuilder: (context, index) {
-                            return ImageTile(
-                              imageFuture: viewModel.getImageAt(index),
-                              onDelete:
-                                  viewModel.canRemoveImages
-                                      ? () {
-                                        viewModel.removeImageAt(index);
-                                      }
-                                      : null,
-                            );
-                          },
-                        ),
-                      )
-                      : SizedBox(),
-                  TextButton.icon(
-                    icon: Icon(Icons.delete),
-                    label: Text(
-                      "Remove all image(s)",
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  spacing: 8,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Center(
+                      child:
+                          viewModel.imagePaths.isEmpty
+                              ? Text('No image added')
+                              : Text(
+                                '${viewModel.imagePaths.length} image(s) added',
+                              ),
                     ),
-                    onPressed:
-                        viewModel.imagePaths.isNotEmpty &&
-                                viewModel.canRemoveImages
-                            ? () {
-                              viewModel.removeAllImages();
-                            }
-                            : null,
-                  ),
-                ],
+                    viewModel.imagePaths.isNotEmpty
+                        ? Expanded(
+                          child: SizedBox(
+                            height: 120,
+                            child: ListView.builder(
+                              restorationId: 'processed_image_list',
+                              scrollDirection: Axis.horizontal,
+                              itemCount: viewModel.imagePaths.length,
+                              itemBuilder: (context, index) {
+                                final imagePath = viewModel.getImagePathAt(
+                                  index,
+                                );
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4.0,
+                                  ),
+                                  child: ImageTile(
+                                    imagePath: imagePath!,
+                                    imageFuture: viewModel.getImage(imagePath),
+                                    onRemove:
+                                        viewModel.canRemoveImages
+                                            ? () {
+                                              viewModel.removeImage(imagePath);
+                                            }
+                                            : null,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                        : SizedBox(),
+                    TextButton.icon(
+                      icon: Icon(Icons.delete),
+                      label: Text(
+                        "Remove all image(s)",
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                      onPressed:
+                          viewModel.imagePaths.isNotEmpty &&
+                                  viewModel.canRemoveImages
+                              ? () {
+                                viewModel.removeAllImages();
+                              }
+                              : null,
+                    ),
+                  ],
+                ),
               ),
             ),
             Column(
