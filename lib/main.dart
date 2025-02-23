@@ -15,6 +15,7 @@ Future<void> main() async {
     title: "Bulk Overlay",
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setMinimumSize(Size(360, 294));
     await windowManager.show();
     await windowManager.focus();
   });
