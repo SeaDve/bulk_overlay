@@ -1,83 +1,80 @@
+import 'dart:io';
 import 'dart:ui';
 import 'dart:async';
 
-import 'package:image/image.dart' as img;
-
-class ImageProcessor {
-  final _processedImages = <String, Image>{};
-  get processedImages => Map.unmodifiable(_processedImages);
-
-  Image? _overlayImage;
-  Future<Image?> get overlayImage async {
-    final path = _overlayImagePath;
-
-    if (path == null) {
-      return null;
+Future<Map<String, Image>> processImages(
+  List<String> imagePaths,
+  String? overlayImagePath,
+) async {
+  if (overlayImagePath == null) {
+    final ret = <String, Image>{};
+    for (final imagePath in imagePaths) {
+      ret[imagePath] = await _loadImage(imagePath);
     }
-
-    if (_overlayImage != null) {
-      return _overlayImage;
-    }
-
-    final image = await _loadImage(path);
-    _overlayImage = image;
-    return image;
+    return ret;
   }
 
-  String? _overlayImagePath;
-  set overlayImagePath(image) {
-    _overlayImagePath = image;
+  final overlay = await _loadImage(overlayImagePath);
 
-    _processedImages.clear();
-    _overlayImage = null;
-  }
-
-  Future<Image> processImage(String imagePath) async {
-    if (_processedImages.containsKey(imagePath)) {
-      return _processedImages[imagePath]!;
-    }
-
+  final ret = <String, Image>{};
+  for (final imagePath in imagePaths) {
     final image = await _loadImage(imagePath);
-
-    if (image == null) {
-      throw Exception('Failed to load image');
-    }
-
-    final overlay = await overlayImage;
-
-    if (overlay == null) {
-      throw Exception('Overlay image is null');
-    }
-
-    final processedImage = await _blendImages(image, overlay);
-    _processedImages[imagePath] = processedImage;
-
-    return processedImage;
+    ret[imagePath] = await _blendImages(image, overlay);
   }
+  return ret;
 }
 
-Future<Image?> _loadImage(String imagePath) async {
-  final rawImage = await img.decodeImageFile(imagePath);
+Future<void> saveImage(Image image, String imagePath) async {
+  final pngData = await image.toByteData(format: ImageByteFormat.png);
 
-  if (rawImage == null) {
-    throw Exception('Failed to decode image');
+  if (pngData == null) {
+    throw Exception('Failed to convert image to PNG bytes');
   }
 
-  final codec = await instantiateImageCodec(rawImage.getBytes());
+  final bytes = pngData.buffer.asUint8List();
+  await File(imagePath).writeAsBytes(bytes);
+}
+
+Future<Image> _loadImage(String imagePath) async {
+  final bytes = await File(imagePath).readAsBytes();
+  final codec = await instantiateImageCodec(bytes);
   final frameInfo = await codec.getNextFrame();
   return frameInfo.image;
 }
 
-Future<Image> _blendImages(Image baseImage, Image overlayImage) {
+Future<Image> _blendImages(Image baseImage, Image overlayImage) async {
   final recorder = PictureRecorder();
-
-  final overlayPaint = Paint()..blendMode = BlendMode.overlay;
 
   final canvas = Canvas(recorder);
   canvas.drawImage(baseImage, Offset.zero, Paint());
-  canvas.drawImage(overlayImage, Offset.zero, overlayPaint);
 
-  final compositeImage = recorder.endRecording().toImage(
+  final footerRatio = overlayImage.width / overlayImage.height;
+  final newFooterWidth = baseImage.width.toDouble();
+  final newFooterHeight = newFooterWidth / footerRatio;
+
+  final footerPosition = Offset(
+    0,
+    baseImage.height.toDouble() - newFooterHeight,
+  );
+  final overlayPaint = Paint()..blendMode = BlendMode.srcOver;
+  canvas.drawImageRect(
+    overlayImage,
+    Rect.fromLTWH(
+      0,
+      0,
+      overlayImage.width.toDouble(),
+      overlayImage.height.toDouble(),
+    ),
+    Rect.fromLTWH(
+      footerPosition.dx,
+      footerPosition.dy,
+      newFooterWidth,
+      newFooterHeight,
+    ),
+    overlayPaint,
+  );
+
+  final compositeImage = await recorder.endRecording().toImage(
     baseImage.width,
     baseImage.height,
   );

@@ -1,82 +1,190 @@
-import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 
-import '../data/image_processor.dart';
+import '../data/image_processor.dart' as image_processor;
+
+// TODO Optimize for many images, limit the number of images loaded at once
 
 class HomeViewModel extends ChangeNotifier {
-  HomeViewModel({required this.imageProcessor});
+  final _imagePaths = <String, ui.Image?>{};
+  Map<String, ui.Image?> get imagePaths => Map.unmodifiable(_imagePaths);
 
-  final ImageProcessor imageProcessor;
-
-  final _imageFiles = <PlatformFile>[];
-  get imageFiles => List.unmodifiable(_imageFiles);
-
-  PlatformFile? _overlayImageFile;
-  get overlayImageFile => _overlayImageFile;
+  String? _overlayImagePath;
+  String? get overlayImagePath => _overlayImagePath;
 
   String? _outputFolder;
-  get outputFolder => _outputFolder;
+  String? get outputFolder => _outputFolder;
 
-  bool get canProcess {
-    return _imageFiles.isNotEmpty &&
-        _overlayImageFile != null &&
-        _outputFolder != null;
+  bool get canSaveImages =>
+      _overlayImagePath != null &&
+      imagePaths.isNotEmpty &&
+      _outputFolder != null;
+  bool get canRemoveImages => _saveProgress == null;
+
+  double? _saveProgress;
+  double? get saveProgress => _saveProgress;
+
+  String? _saveError;
+  String? get saveError => _saveError;
+
+  Future<ui.Image?> getImageAt(int index) async {
+    final imagePath = _imagePaths.keys.elementAtOrNull(index);
+
+    if (imagePath == null) {
+      return null;
+    }
+
+    if (_imagePaths[imagePath] != null) {
+      return _imagePaths[imagePath];
+    }
+
+    final image = await image_processor.processImages([
+      imagePath,
+    ], _overlayImagePath);
+    assert(image.length == 1);
+    _imagePaths[imagePath] = image.values.first;
+
+    return image.values.first;
   }
 
-  Future<void> selectImages() async {
-    final result = await FilePicker.platform.pickFiles(allowMultiple: true);
+  void removeImageAt(int index) {
+    final key = _imagePaths.keys.elementAtOrNull(index);
+
+    if (key == null) {
+      return;
+    }
+
+    _imagePaths.remove(key);
+
+    _saveProgress = null;
+    _saveError = null;
+
+    notifyListeners();
+  }
+
+  void removeAllImages() {
+    _imagePaths.clear();
+
+    _saveProgress = null;
+    _saveError = null;
+
+    notifyListeners();
+  }
+
+  Future<void> addImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select Image(s)',
+      allowMultiple: true,
+    );
 
     if (result != null) {
-      _imageFiles.addAll(result.files);
+      _imagePaths.addEntries(
+        result.files.map((file) => MapEntry(file.path!, null)),
+      );
+
+      _saveProgress = null;
+      _saveError = null;
 
       notifyListeners();
     }
   }
 
+  void removeOverlayImage() {
+    _overlayImagePath = null;
+
+    for (final imagePath in _imagePaths.keys) {
+      _imagePaths[imagePath] = null;
+    }
+
+    _saveProgress = null;
+    _saveError = null;
+
+    notifyListeners();
+  }
+
   Future<void> selectOverlayImage() async {
-    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select Overlay Image',
+      allowMultiple: false,
+    );
 
     if (result != null) {
       assert(result.isSinglePick);
 
-      final imageFile = result.files.first;
-      _overlayImageFile = imageFile;
-      imageProcessor.overlayImagePath = imageFile.path;
+      _overlayImagePath = result.files.first.path;
+
+      for (final imagePath in _imagePaths.keys) {
+        _imagePaths[imagePath] = null;
+      }
+
+      _saveProgress = null;
+      _saveError = null;
 
       notifyListeners();
     }
   }
 
   Future<void> selectOutputFolder() async {
-    final result = await FilePicker.platform.getDirectoryPath();
+    final result = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select Output Folder',
+    );
 
     if (result != null) {
       _outputFolder = result;
+
+      _saveProgress = null;
+      _saveError = null;
 
       notifyListeners();
     }
   }
 
-  Future<void> startProcessing() async {
-    for (final imageFile in _imageFiles) {
-      final imagePath = imageFile.path;
+  Future<void> saveImages() async {
+    _saveError = null;
+    _saveProgress = 0.1;
+    notifyListeners();
 
-      if (imagePath == null) {
-        throw Exception('Image file path is null');
+    final unprocessed =
+        _imagePaths.entries
+            .where((e) => e.value == null)
+            .map((e) => e.key)
+            .toList();
+
+    final prevLen = _imagePaths.length;
+    try {
+      final processed = await image_processor.processImages(
+        unprocessed,
+        _overlayImagePath!,
+      );
+      _imagePaths.addAll(processed);
+      assert(_imagePaths.length == prevLen);
+
+      _saveProgress = 0.5;
+      notifyListeners();
+
+      for (final (index, entry) in _imagePaths.entries.indexed) {
+        final imagePath = entry.key;
+        final image = entry.value!;
+
+        final outputPath = path.join(
+          outputFolder!,
+          path.setExtension(path.basename(imagePath), '.png'),
+        );
+        await image_processor.saveImage(image, outputPath);
+
+        _saveProgress = 0.5 + (index + 1) / _imagePaths.length / 2;
+        notifyListeners();
       }
 
-      final image = await imageProcessor.processImage(imagePath);
-      final byteData = await image.toByteData();
-
-      if (byteData == null) {
-        throw Exception('Failed to convert image to bytes');
-      }
-
-      final bytes = byteData.buffer.asUint8List();
-      await File(path.join(outputFolder, imageFile.name)).writeAsBytes(bytes);
+      _saveProgress = 1.0;
+      notifyListeners();
+    } on Exception catch (e) {
+      _saveError = e.toString();
+      _saveProgress = null;
+      notifyListeners();
     }
   }
 }

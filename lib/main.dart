@@ -5,7 +5,6 @@ import 'package:window_manager/window_manager.dart';
 
 import 'ui/home.dart';
 import 'ui/home_viewmodel.dart';
-import 'data/image_processor.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +21,7 @@ Future<void> main() async {
 
   runApp(
     MultiProvider(
-      providers: [
-        Provider(create: (context) => ImageProcessor()),
-        ChangeNotifierProvider(
-          create: (context) => HomeViewModel(imageProcessor: context.read()),
-        ),
-      ],
+      providers: [ChangeNotifierProvider(create: (context) => HomeViewModel())],
       child: MainApp(),
     ),
   );
