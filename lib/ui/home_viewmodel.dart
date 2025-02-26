@@ -2,50 +2,44 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as path;
 
-import '../data/image_processor.dart' as image_processor;
+import '../data/image_repository.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final _imagePaths = <String, ui.Image?>{};
-  Map<String, ui.Image?> get imagePaths => Map.unmodifiable(_imagePaths);
+  HomeViewModel({required ImageRepository imageRepository})
+    : _imageRepository = imageRepository;
 
-  String? _overlayImagePath;
-  String? get overlayImagePath => _overlayImagePath;
+  final ImageRepository _imageRepository;
 
   String? _outputFolder;
+
+  double? _saveProgress;
+  String? _saveError;
+
   String? get outputFolder => _outputFolder;
 
+  double? get saveProgress => _saveProgress;
+  String? get saveError => _saveError;
+
+  String? get overlayImagePath => _imageRepository.overlayImagePath;
+
+  bool get hasImage => _imageRepository.isNotEmpty;
+  int get nImages => _imageRepository.length;
+
   bool get canSaveImages =>
-      _overlayImagePath != null &&
-      imagePaths.isNotEmpty &&
+      _imageRepository.overlayImagePath != null &&
+      _imageRepository.isNotEmpty &&
       _outputFolder != null;
   bool get canRemoveImages => _saveProgress == null;
 
-  double? _saveProgress;
-  double? get saveProgress => _saveProgress;
-
-  String? _saveError;
-  String? get saveError => _saveError;
-
-  String? getImagePathAt(int index) => _imagePaths.keys.elementAtOrNull(index);
+  String? getImagePathAt(int index) => _imageRepository.getAt(index);
 
   Future<ui.Image?> getImage(String imagePath) async {
-    if (_imagePaths[imagePath] != null) {
-      return _imagePaths[imagePath];
-    }
-
-    final image = await image_processor.processImages([
-      imagePath,
-    ], _overlayImagePath);
-    assert(image.length == 1);
-    _imagePaths[imagePath] = image.values.first;
-
-    return image.values.first;
+    return _imageRepository.getImage(imagePath);
   }
 
   void addImages(List<String> paths) {
-    _imagePaths.addEntries(paths.map((path) => MapEntry(path, null)));
+    _imageRepository.add(paths);
 
     _saveProgress = null;
     _saveError = null;
@@ -54,7 +48,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void removeImage(String imagePath) {
-    _imagePaths.remove(imagePath);
+    _imageRepository.remove(imagePath);
 
     _saveProgress = null;
     _saveError = null;
@@ -63,7 +57,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void removeAllImages() {
-    _imagePaths.clear();
+    _imageRepository.removeAll();
 
     _saveProgress = null;
     _saveError = null;
@@ -72,11 +66,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void setOverlayImagePath(String? value) {
-    _overlayImagePath = value;
-
-    for (final imagePath in _imagePaths.keys) {
-      _imagePaths[imagePath] = null;
-    }
+    _imageRepository.overlayImagePath = value;
 
     _saveProgress = null;
     _saveError = null;
@@ -128,43 +118,14 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<void> saveImages() async {
     _saveError = null;
-    _saveProgress = 0.1;
+    _saveProgress = 0.0;
     notifyListeners();
 
-    final unprocessed =
-        _imagePaths.entries
-            .where((e) => e.value == null)
-            .map((e) => e.key)
-            .toList();
-
-    final prevLen = _imagePaths.length;
     try {
-      final processed = await image_processor.processImages(
-        unprocessed,
-        _overlayImagePath!,
-      );
-      _imagePaths.addAll(processed);
-      assert(_imagePaths.length == prevLen);
-
-      _saveProgress = 0.5;
-      notifyListeners();
-
-      for (final (index, entry) in _imagePaths.entries.indexed) {
-        final imagePath = entry.key;
-        final image = entry.value!;
-
-        final outputPath = path.join(
-          outputFolder!,
-          path.setExtension(path.basename(imagePath), '.png'),
-        );
-        await image_processor.saveImage(image, outputPath);
-
-        _saveProgress = 0.5 + (index + 1) / _imagePaths.length / 2;
+      await _imageRepository.saveAll(_outputFolder!, (progress) {
+        _saveProgress = progress;
         notifyListeners();
-      }
-
-      _saveProgress = 1.0;
-      notifyListeners();
+      });
     } on Exception catch (e) {
       _saveError = e.toString();
       _saveProgress = null;

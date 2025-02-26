@@ -74,20 +74,18 @@ class Home extends StatelessWidget {
                   children: [
                     Center(
                       child:
-                          viewModel.imagePaths.isEmpty
-                              ? Text('No image added')
-                              : Text(
-                                '${viewModel.imagePaths.length} image(s) added',
-                              ),
+                          viewModel.hasImage
+                              ? Text('${viewModel.nImages} image(s) added')
+                              : Text('No image added'),
                     ),
-                    viewModel.imagePaths.isNotEmpty
+                    viewModel.hasImage
                         ? Expanded(
                           child: SizedBox(
                             height: 120,
                             child: ListView.builder(
                               restorationId: 'processed_image_list',
                               scrollDirection: Axis.horizontal,
-                              itemCount: viewModel.imagePaths.length,
+                              itemCount: viewModel.nImages,
                               itemBuilder: (context, index) {
                                 final imagePath = viewModel.getImagePathAt(
                                   index,
@@ -120,8 +118,7 @@ class Home extends StatelessWidget {
                         maxLines: 2,
                       ),
                       onPressed:
-                          viewModel.imagePaths.isNotEmpty &&
-                                  viewModel.canRemoveImages
+                          viewModel.hasImage && viewModel.canRemoveImages
                               ? () {
                                 viewModel.removeAllImages();
                               }

@@ -2,26 +2,11 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:async';
 
-Future<Map<String, Image>> processImages(
-  List<String> imagePaths,
-  String? overlayImagePath,
-) async {
-  if (overlayImagePath == null) {
-    final ret = <String, Image>{};
-    for (final imagePath in imagePaths) {
-      ret[imagePath] = await _loadImage(imagePath);
-    }
-    return ret;
-  }
-
-  final overlay = await _loadImage(overlayImagePath);
-
-  final ret = <String, Image>{};
-  for (final imagePath in imagePaths) {
-    final image = await _loadImage(imagePath);
-    ret[imagePath] = await _blendImages(image, overlay);
-  }
-  return ret;
+Future<Image> loadImage(String imagePath) async {
+  final bytes = await File(imagePath).readAsBytes();
+  final codec = await instantiateImageCodec(bytes);
+  final frameInfo = await codec.getNextFrame();
+  return frameInfo.image;
 }
 
 Future<void> saveImage(Image image, String imagePath) async {
@@ -35,14 +20,7 @@ Future<void> saveImage(Image image, String imagePath) async {
   await File(imagePath).writeAsBytes(bytes);
 }
 
-Future<Image> _loadImage(String imagePath) async {
-  final bytes = await File(imagePath).readAsBytes();
-  final codec = await instantiateImageCodec(bytes);
-  final frameInfo = await codec.getNextFrame();
-  return frameInfo.image;
-}
-
-Future<Image> _blendImages(Image baseImage, Image overlayImage) async {
+Future<Image> blendImages(Image baseImage, Image overlayImage) async {
   final recorder = PictureRecorder();
 
   final canvas = Canvas(recorder);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'data/image_repository.dart';
 import 'ui/home.dart';
 import 'ui/home_viewmodel.dart';
 
@@ -22,7 +23,12 @@ Future<void> main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => HomeViewModel())],
+      providers: [
+        Provider(create: (context) => ImageRepository()),
+        ChangeNotifierProvider(
+          create: (context) => HomeViewModel(imageRepository: context.read()),
+        ),
+      ],
       child: MainApp(),
     ),
   );
