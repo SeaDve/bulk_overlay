@@ -13,7 +13,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        padding: const EdgeInsets.symmetric(vertical: 24.0),
         child: Column(
           spacing: 24,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,40 +144,48 @@ class Home extends StatelessWidget {
                     await viewModel.selectOutputFolder();
                   },
                 ),
+                FilledButton(
+                  onPressed:
+                      viewModel.canSaveImages
+                          ? () async {
+                            await viewModel.saveImages();
+                          }
+                          : null,
+                  child: Builder(
+                    builder: (context) {
+                      if (viewModel.saveProgress == null ||
+                          viewModel.saveProgress == 1.0) {
+                        return Text(
+                          "Save image(s)",
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        );
+                      } else {
+                        return SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: CircularProgressIndicator(
+                              value: viewModel.saveProgress,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
                 Builder(
                   builder: (context) {
                     if (viewModel.saveError != null) {
                       return Text(viewModel.saveError!);
                     }
 
-                    if (viewModel.saveProgress != null) {
-                      if (viewModel.saveProgress == 1.0) {
-                        return Text('Images saved successfully');
-                      } else {
-                        return SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            value: viewModel.saveProgress,
-                          ),
-                        );
-                      }
+                    if (viewModel.saveProgress == 1.0) {
+                      return Text('Images saved successfully');
                     }
 
-                    return FilledButton.icon(
-                      onPressed:
-                          viewModel.canSaveImages
-                              ? () async {
-                                await viewModel.saveImages();
-                              }
-                              : null,
-                      icon: Icon(Icons.save),
-                      label: Text(
-                        "Save image(s)",
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                    );
+                    return SizedBox();
                   },
                 ),
               ],

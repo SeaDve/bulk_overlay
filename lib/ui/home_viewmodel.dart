@@ -29,8 +29,9 @@ class HomeViewModel extends ChangeNotifier {
   bool get canSaveImages =>
       _imageRepository.overlayImagePath != null &&
       _imageRepository.isNotEmpty &&
-      _outputFolder != null;
-  bool get canRemoveImages => _saveProgress == null;
+      _outputFolder != null &&
+      _saveProgress == null;
+  bool get canRemoveImages => _saveProgress == null || _saveProgress == 1.0;
 
   String? getImagePathAt(int index) => _imageRepository.getAt(index);
 
@@ -118,12 +119,12 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<void> saveImages() async {
     _saveError = null;
-    _saveProgress = 0.0;
+    _saveProgress = 0.1;
     notifyListeners();
 
     try {
       await _imageRepository.saveAll(_outputFolder!, (progress) {
-        _saveProgress = progress;
+        _saveProgress = progress * 0.9 + 0.1;
         notifyListeners();
       });
     } on Exception catch (e) {
