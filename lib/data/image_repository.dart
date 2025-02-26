@@ -4,22 +4,25 @@ import 'package:path/path.dart' as path;
 
 import '../data/image_processor.dart' as image_processor;
 
+const _maxLoadedImages = 10;
+
 class ImageRepository {
-  final _map = <String, Image?>{};
+  final _store = <String, Image?>{};
+  final _recentlyRequested = <String>{};
 
   Image? _overlayImage;
   String? _overlayImagePath;
 
-  int get length => _map.length;
-  bool get isEmpty => _map.isEmpty;
-  bool get isNotEmpty => _map.isNotEmpty;
+  int get length => _store.length;
+  bool get isEmpty => _store.isEmpty;
+  bool get isNotEmpty => _store.isNotEmpty;
 
   String? get overlayImagePath => _overlayImagePath;
   set overlayImagePath(String? value) {
     _overlayImagePath = value;
 
-    for (final path in _map.keys) {
-      _map[path] = null;
+    for (final path in _store.keys) {
+      _store[path] = null;
     }
 
     _overlayImage = null;
@@ -41,7 +44,7 @@ class ImageRepository {
     String outputFolder,
     Function(double progress) progressCallback,
   ) async {
-    for (final (index, entry) in _map.entries.indexed) {
+    for (final (index, entry) in _store.entries.indexed) {
       final imagePath = entry.key;
 
       final overlayImage = await _getOverlayImage();
@@ -54,36 +57,55 @@ class ImageRepository {
       );
       await image_processor.saveImage(processedImage, outputPath);
 
-      progressCallback((index + 1) / _map.length);
+      progressCallback((index + 1) / _store.length);
     }
   }
 
   Future<Image?> getImage(String path) async {
-    if (_map[path] != null) {
-      return _map[path];
+    _updateRecentlyRequested(path);
+
+    if (_store[path] != null) {
+      return _store[path];
     }
 
     final overlayImage = await _getOverlayImage();
     final processedImage = await _processImage(path, overlayImage);
-    _map[path] = processedImage;
+    _store[path] = processedImage;
+
+    _ensureMaxLoadedImages();
 
     return processedImage;
   }
 
   String? getAt(int index) {
-    return _map.keys.elementAtOrNull(index);
+    return _store.keys.elementAtOrNull(index);
   }
 
   void add(List<String> paths) {
-    _map.addEntries(paths.map((path) => MapEntry(path, null)));
+    _store.addEntries(paths.map((path) => MapEntry(path, null)));
   }
 
   void remove(String path) {
-    _map.remove(path);
+    _store.remove(path);
+    _recentlyRequested.remove(path);
   }
 
   void removeAll() {
-    _map.clear();
+    _store.clear();
+    _recentlyRequested.clear();
+  }
+
+  void _updateRecentlyRequested(String path) {
+    _recentlyRequested.remove(path);
+    _recentlyRequested.add(path);
+  }
+
+  void _ensureMaxLoadedImages() {
+    while (_recentlyRequested.length > _maxLoadedImages) {
+      final oldestPath = _recentlyRequested.first;
+      _store[oldestPath] = null;
+      _recentlyRequested.remove(oldestPath);
+    }
   }
 }
 
