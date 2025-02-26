@@ -13,7 +13,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24.0),
+        padding: const EdgeInsets.symmetric(vertical: 48.0),
         child: Column(
           spacing: 24,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -185,7 +185,7 @@ class Home extends StatelessWidget {
                       return Text('Images saved successfully');
                     }
 
-                    return SizedBox();
+                    return Text('');
                   },
                 ),
               ],
