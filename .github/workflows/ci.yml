@@ -45,3 +45,12 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+  spelling:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Spell check repository
+        uses: crate-ci/typos@v1.29.10
