@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../data/image_repository.dart';
 import '../data/output_config.dart';
+import '../data/save_status.dart';
 
 const _defaultOutputFormat = OutputFormat.jpg;
 const _defaultJpgOutputQuality = 80;
@@ -19,34 +20,32 @@ class HomeViewModel extends ChangeNotifier {
   OutputFormat _outputFormat = _defaultOutputFormat;
   int _jpgOutputQuality = _defaultJpgOutputQuality;
 
-  double? _saveProgress;
-  String? _saveError;
+  SaveStatus _saveStatus = SaveStatusIdle();
 
   String? get outputFolder => _outputFolder;
   set outputFolder(String? value) {
     _outputFolder = value;
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   OutputFormat get outputFormat => _outputFormat;
   set outputFormat(OutputFormat value) {
     _outputFormat = value;
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   int get jpgOutputQuality => _jpgOutputQuality;
   set jpgOutputQuality(int value) {
     _jpgOutputQuality = value;
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
-  double? get saveProgress => _saveProgress;
-  String? get saveError => _saveError;
+  SaveStatus get saveStatus => _saveStatus;
 
   String? get overlayImagePath => _imageRepository.overlayImagePath;
   set overlayImagePath(String? value) {
     _imageRepository.overlayImagePath = value;
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   bool get hasImage => _imageRepository.isNotEmpty;
@@ -56,8 +55,8 @@ class HomeViewModel extends ChangeNotifier {
       _imageRepository.overlayImagePath != null &&
       _imageRepository.isNotEmpty &&
       _outputFolder != null &&
-      _saveProgress == null;
-  bool get canRemoveImages => _saveProgress == null || _saveProgress == 1.0;
+      _saveStatus is SaveStatusIdle;
+  bool get canRemoveImages => _saveStatus is! SaveStatusInProgress;
 
   String? getImagePathAt(int index) => _imageRepository.getAt(index);
 
@@ -67,17 +66,17 @@ class HomeViewModel extends ChangeNotifier {
 
   void addImages(List<String> paths) {
     _imageRepository.add(paths);
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   void removeImage(String imagePath) {
     _imageRepository.remove(imagePath);
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   void removeAllImages() {
     _imageRepository.removeAll();
-    _resetSaveProgress();
+    _resetSaveStatus();
   }
 
   Future<void> selectImages() async {
@@ -114,8 +113,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   Future<void> saveImages() async {
-    _saveError = null;
-    _saveProgress = 0.1;
+    _saveStatus = SaveStatusInProgress(0.1);
     notifyListeners();
 
     final outputConfig = switch (_outputFormat) {
@@ -125,20 +123,18 @@ class HomeViewModel extends ChangeNotifier {
 
     try {
       await _imageRepository.saveAll(_outputFolder!, outputConfig, (progress) {
-        _saveProgress = progress * 0.9 + 0.1;
+        _saveStatus = SaveStatusInProgress(progress * 0.9 + 0.1);
         notifyListeners();
       });
-      assert(_saveProgress == 1.0);
+      _saveStatus = SaveStatusSuccess();
     } on Exception catch (e) {
-      _saveError = e.toString();
-      _saveProgress = null;
+      _saveStatus = SaveStatusFailure(e.toString());
       notifyListeners();
     }
   }
 
-  void _resetSaveProgress() {
-    _saveProgress = null;
-    _saveError = null;
+  void _resetSaveStatus() {
+    _saveStatus = SaveStatusIdle();
     notifyListeners();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:bulk_overlay/data/save_status.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
@@ -12,6 +13,8 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final saveStatus = viewModel.saveStatus;
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 48.0),
@@ -186,41 +189,20 @@ class Home extends StatelessWidget {
                             await viewModel.saveImages();
                           }
                           : null,
-                  child: Builder(
-                    builder: (context) {
-                      if (viewModel.saveProgress == null ||
-                          viewModel.saveProgress == 1.0) {
-                        return Text(
-                          "Save image(s)",
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                        );
-                      } else {
-                        return SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: CircularProgressIndicator(
-                              value: viewModel.saveProgress,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-                Builder(
-                  builder: (context) {
-                    if (viewModel.saveError != null) {
-                      return Text(viewModel.saveError!);
-                    }
-
-                    if (viewModel.saveProgress == 1.0) {
-                      return Text('Images saved successfully');
-                    }
-
-                    return Text('');
+                  child: switch (saveStatus) {
+                    SaveStatusIdle _ => Text('Save image(s)'),
+                    SaveStatusSuccess _ => Text('Done'),
+                    SaveStatusFailure _ => Text(saveStatus.error),
+                    SaveStatusInProgress _ => SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: CircularProgressIndicator(
+                          value: saveStatus.progress,
+                        ),
+                      ),
+                    ),
                   },
                 ),
               ],
