@@ -7,7 +7,7 @@ import '../data/image_repository.dart';
 import '../data/output_config.dart';
 
 const _defaultOutputFormat = OutputFormat.jpg;
-const _defaultJpgOutputQuality = 90;
+const _defaultJpgOutputQuality = 80;
 
 class HomeViewModel extends ChangeNotifier {
   HomeViewModel({required ImageRepository imageRepository})
