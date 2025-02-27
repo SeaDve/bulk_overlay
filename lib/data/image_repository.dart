@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:path/path.dart' as path;
 
 import 'output_config.dart';
-import '../data/image_processor.dart' as image_processor;
+import 'image_service.dart';
 
 const _maxLoadedImages = 10;
 
@@ -36,7 +36,7 @@ class ImageRepository {
       return null;
     }
 
-    _overlayImage ??= await image_processor.loadImage(overlayImagePath);
+    _overlayImage ??= await loadImage(overlayImagePath);
 
     return _overlayImage;
   }
@@ -60,7 +60,7 @@ class ImageRepository {
           outputConfig.format.extension,
         ),
       );
-      await image_processor.saveImage(processedImage, outputPath, outputConfig);
+      await saveImage(processedImage, outputPath, outputConfig);
 
       progressCallback((index + 1) / _store.length);
     }
@@ -115,11 +115,11 @@ class ImageRepository {
 }
 
 Future<Image> _processImage(String path, Image? overlayImage) async {
-  final image = await image_processor.loadImage(path);
+  final image = await loadImage(path);
 
   if (overlayImage == null) {
     return image;
   }
 
-  return await image_processor.blendImages(image, overlayImage);
+  return await blendImages(image, overlayImage);
 }
