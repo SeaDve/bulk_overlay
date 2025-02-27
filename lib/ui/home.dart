@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
+import '../data/output_config.dart';
 import 'home_viewmodel.dart';
 import 'image_tile.dart';
 
@@ -33,6 +34,7 @@ class Home extends StatelessWidget {
                   },
                 ),
                 Row(
+                  spacing: 8,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton.icon(
@@ -55,7 +57,7 @@ class Home extends StatelessWidget {
                           viewModel.overlayImagePath != null &&
                                   viewModel.canRemoveImages
                               ? () {
-                                viewModel.setOverlayImagePath(null);
+                                viewModel.overlayImagePath = null;
                               }
                               : null,
                     ),
@@ -143,6 +145,39 @@ class Home extends StatelessWidget {
                   onPressed: () async {
                     await viewModel.selectOutputFolder();
                   },
+                ),
+                Row(
+                  spacing: 8,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    DropdownMenu(
+                      label: Text('Format'),
+                      initialSelection: viewModel.outputFormat,
+                      dropdownMenuEntries: [
+                        for (final format in OutputFormat.values)
+                          DropdownMenuEntry(value: format, label: format.name),
+                      ],
+                      onSelected: (value) {
+                        viewModel.outputFormat = value!;
+                      },
+                    ),
+                    viewModel.outputFormat == OutputFormat.jpg
+                        ? DropdownMenu(
+                          label: Text('Quality'),
+                          initialSelection: viewModel.jpgOutputQuality,
+                          dropdownMenuEntries: [
+                            for (int quality = 0; quality <= 100; quality++)
+                              DropdownMenuEntry(
+                                value: quality,
+                                label: quality.toString(),
+                              ),
+                          ],
+                          onSelected: (value) {
+                            viewModel.jpgOutputQuality = value;
+                          },
+                        )
+                        : SizedBox(),
+                  ],
                 ),
                 FilledButton(
                   onPressed:

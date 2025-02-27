@@ -10,6 +10,7 @@ dependencies:
   file_picker: ^9.0.0
   flutter:
     sdk: flutter
+  jpeg_encode: ^1.0.1
   path: ^1.9.1
   provider: ^6.1.2
   window_manager: ^0.4.3

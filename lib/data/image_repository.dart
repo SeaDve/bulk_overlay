@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:path/path.dart' as path;
 
+import 'output_config.dart';
 import '../data/image_processor.dart' as image_processor;
 
 const _maxLoadedImages = 10;
@@ -42,6 +43,7 @@ class ImageRepository {
 
   Future<void> saveAll(
     String outputFolder,
+    OutputConfig outputConfig,
     Function(double progress) progressCallback,
   ) async {
     for (final (index, entry) in _store.entries.indexed) {
@@ -53,9 +55,12 @@ class ImageRepository {
 
       final outputPath = path.join(
         outputFolder,
-        path.setExtension(path.basename(imagePath), '.png'),
+        path.setExtension(
+          path.basename(imagePath),
+          outputConfig.format.extension,
+        ),
       );
-      await image_processor.saveImage(processedImage, outputPath);
+      await image_processor.saveImage(processedImage, outputPath, outputConfig);
 
       progressCallback((index + 1) / _store.length);
     }
