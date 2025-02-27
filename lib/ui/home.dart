@@ -25,23 +25,43 @@ class Home extends StatelessWidget {
             Column(
               spacing: 8,
               children: [
-                TextButton.icon(
-                  icon: Icon(Icons.file_copy),
-                  label: Text(
-                    "Add image(s)",
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                  ),
-                  onPressed: () async {
-                    await viewModel.selectImages();
-                  },
+                Row(
+                  spacing: 8,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      icon: Icon(Icons.add_a_photo),
+                      label: Text(
+                        "Add image(s)",
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                      onPressed: () async {
+                        await viewModel.selectImages();
+                      },
+                    ),
+                    TextButton.icon(
+                      icon: Icon(Icons.delete),
+                      label: Text(
+                        'Remove ${viewModel.nImages} image(s)',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                      onPressed:
+                          viewModel.hasImage && viewModel.canRemoveImages
+                              ? () {
+                                viewModel.removeAllImages();
+                              }
+                              : null,
+                    ),
+                  ],
                 ),
                 Row(
                   spacing: 8,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton.icon(
-                      icon: Icon(Icons.file_copy),
+                      icon: Icon(Icons.file_open),
                       label: Text(
                         viewModel.overlayImagePath == null
                             ? "Select overlay image"
@@ -53,9 +73,9 @@ class Home extends StatelessWidget {
                         await viewModel.selectOverlayImage();
                       },
                     ),
-                    IconButton(
-                      color: Theme.of(context).colorScheme.primary,
+                    TextButton.icon(
                       icon: Icon(Icons.delete),
+                      label: Text('Remove overlay'),
                       onPressed:
                           viewModel.overlayImagePath != null &&
                                   viewModel.canRemoveImages
@@ -77,12 +97,8 @@ class Home extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Center(
-                      child:
-                          viewModel.hasImage
-                              ? Text('${viewModel.nImages} image(s) added')
-                              : Text('No image added'),
-                    ),
+                    if (!viewModel.hasImage)
+                      Center(child: Text('No image added')),
                     viewModel.hasImage
                         ? Expanded(
                           child: SizedBox(
@@ -101,6 +117,9 @@ class Home extends StatelessWidget {
                                   ),
                                   child: ImageTile(
                                     imagePath: imagePath!,
+                                    imageIsSaved: viewModel.isImageSaved(
+                                      imagePath,
+                                    ),
                                     imageFuture: viewModel.getImage(imagePath),
                                     onRemove:
                                         viewModel.canRemoveImages
@@ -115,20 +134,6 @@ class Home extends StatelessWidget {
                           ),
                         )
                         : SizedBox(),
-                    TextButton.icon(
-                      icon: Icon(Icons.delete),
-                      label: Text(
-                        "Remove all image(s)",
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                      onPressed:
-                          viewModel.hasImage && viewModel.canRemoveImages
-                              ? () {
-                                viewModel.removeAllImages();
-                              }
-                              : null,
-                    ),
                   ],
                 ),
               ),
@@ -170,7 +175,7 @@ class Home extends StatelessWidget {
                   ],
                 ),
                 TextButton.icon(
-                  icon: Icon(Icons.folder),
+                  icon: Icon(Icons.folder_open),
                   label: Text(
                     viewModel.outputFolder == null
                         ? "Select output folder"
@@ -191,7 +196,7 @@ class Home extends StatelessWidget {
                           : null,
                   child: switch (saveStatus) {
                     SaveStatusIdle _ => Text('Save image(s)'),
-                    SaveStatusSuccess _ => Text('Done'),
+                    SaveStatusSuccess _ => Text('All imaged saved'),
                     SaveStatusFailure _ => Text(saveStatus.error),
                     SaveStatusInProgress _ => SizedBox(
                       width: 24,

@@ -5,11 +5,13 @@ class ImageTile extends StatefulWidget {
   const ImageTile({
     super.key,
     required this.imagePath,
+    required this.imageIsSaved,
     required this.imageFuture,
     required this.onRemove,
   });
 
   final String imagePath;
+  final bool imageIsSaved;
   final Future<ui.Image?> imageFuture;
 
   final VoidCallback? onRemove;
@@ -58,10 +60,17 @@ class _ImageTileState extends State<ImageTile> {
                   );
                 },
               ),
-              Positioned.directional(
-                end: 8,
-                top: 8,
-                textDirection: TextDirection.ltr,
+              if (widget.imageIsSaved)
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: Card(
+                    child: Icon(Icons.check_circle, color: Colors.green),
+                  ),
+                ),
+              Positioned(
+                right: 8,
+                bottom: 8,
                 child: AnimatedOpacity(
                   opacity: _isHovered ? 1.0 : 0.0,
                   duration: Duration(milliseconds: 200),

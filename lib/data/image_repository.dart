@@ -43,10 +43,10 @@ class ImageRepository {
 
   Future<void> saveAll(
     String outputFolder,
-    OutputConfig outputConfig,
-    Function(double progress) progressCallback,
-  ) async {
-    for (final (index, entry) in _store.entries.indexed) {
+    OutputConfig outputConfig, {
+    required Function(String imagePath) onItemDone,
+  }) async {
+    for (final entry in _store.entries) {
       final imagePath = entry.key;
 
       final overlayImage = await _getOverlayImage();
@@ -62,7 +62,7 @@ class ImageRepository {
       );
       await saveImage(processedImage, outputPath, outputConfig);
 
-      progressCallback((index + 1) / _store.length);
+      onItemDone(imagePath);
     }
   }
 

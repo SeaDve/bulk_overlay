@@ -16,6 +16,8 @@ class HomeViewModel extends ChangeNotifier {
 
   final ImageRepository _imageRepository;
 
+  final _savedImagePaths = <String>{};
+
   String? _outputFolder;
   OutputFormat _outputFormat = _defaultOutputFormat;
   int _jpgOutputQuality = _defaultJpgOutputQuality;
@@ -62,6 +64,10 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<ui.Image?> getImage(String imagePath) async {
     return _imageRepository.getImage(imagePath);
+  }
+
+  bool isImageSaved(String imagePath) {
+    return _savedImagePaths.contains(imagePath);
   }
 
   void addImages(List<String> paths) {
@@ -122,10 +128,17 @@ class HomeViewModel extends ChangeNotifier {
     };
 
     try {
-      await _imageRepository.saveAll(_outputFolder!, outputConfig, (progress) {
-        _saveStatus = SaveStatusInProgress(progress * 0.9 + 0.1);
-        notifyListeners();
-      });
+      await _imageRepository.saveAll(
+        _outputFolder!,
+        outputConfig,
+        onItemDone: (imagePath) {
+          _savedImagePaths.add(imagePath);
+          _saveStatus = SaveStatusInProgress(
+            0.1 + 0.9 * _savedImagePaths.length / _imageRepository.length,
+          );
+          notifyListeners();
+        },
+      );
       _saveStatus = SaveStatusSuccess();
     } on Exception catch (e) {
       _saveStatus = SaveStatusFailure(e.toString());
@@ -135,6 +148,7 @@ class HomeViewModel extends ChangeNotifier {
 
   void _resetSaveStatus() {
     _saveStatus = SaveStatusIdle();
+    _savedImagePaths.clear();
     notifyListeners();
   }
 }
