@@ -133,19 +133,6 @@ class Home extends StatelessWidget {
             Column(
               spacing: 8,
               children: [
-                TextButton.icon(
-                  icon: Icon(Icons.folder),
-                  label: Text(
-                    viewModel.outputFolder == null
-                        ? "Select output folder"
-                        : "${viewModel.outputFolder}",
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                  ),
-                  onPressed: () async {
-                    await viewModel.selectOutputFolder();
-                  },
-                ),
                 Row(
                   spacing: 8,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -178,6 +165,19 @@ class Home extends StatelessWidget {
                         )
                         : SizedBox(),
                   ],
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.folder),
+                  label: Text(
+                    viewModel.outputFolder == null
+                        ? "Select output folder"
+                        : "${viewModel.outputFolder}",
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                  ),
+                  onPressed: () async {
+                    await viewModel.selectOutputFolder();
+                  },
                 ),
                 FilledButton(
                   onPressed:
