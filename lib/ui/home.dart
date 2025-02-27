@@ -173,7 +173,7 @@ class Home extends StatelessWidget {
                               ),
                           ],
                           onSelected: (value) {
-                            viewModel.jpgOutputQuality = value;
+                            viewModel.jpgOutputQuality = value!;
                           },
                         )
                         : SizedBox(),

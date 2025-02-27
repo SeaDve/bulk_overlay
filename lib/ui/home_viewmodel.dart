@@ -17,7 +17,7 @@ class HomeViewModel extends ChangeNotifier {
 
   String? _outputFolder;
   OutputFormat _outputFormat = _defaultOutputFormat;
-  int? _jpgOutputQuality = _defaultJpgOutputQuality;
+  int _jpgOutputQuality = _defaultJpgOutputQuality;
 
   double? _saveProgress;
   String? _saveError;
@@ -34,8 +34,8 @@ class HomeViewModel extends ChangeNotifier {
     _resetsaveProgress();
   }
 
-  int? get jpgOutputQuality => _jpgOutputQuality;
-  set jpgOutputQuality(int? value) {
+  int get jpgOutputQuality => _jpgOutputQuality;
+  set jpgOutputQuality(int value) {
     _jpgOutputQuality = value;
     _resetsaveProgress();
   }
@@ -120,7 +120,7 @@ class HomeViewModel extends ChangeNotifier {
 
     final outputConfig = switch (_outputFormat) {
       OutputFormat.png => PngOutputConfig(),
-      OutputFormat.jpg => JpgOutputConfig(quality: _jpgOutputQuality!),
+      OutputFormat.jpg => JpgOutputConfig(quality: _jpgOutputQuality),
     };
 
     try {
