@@ -1,11 +1,13 @@
 import 'dart:ui';
 
 import 'package:path/path.dart' as path;
+import 'package:quiver/iterables.dart';
 
 import 'output_config.dart';
 import 'image_service.dart';
 
-const _maxLoadedImages = 10;
+const _maxLoadedImages = 16;
+const _batchSaveSize = 8;
 
 class ImageRepository {
   final _store = <String, Image?>{};
@@ -46,23 +48,27 @@ class ImageRepository {
     OutputConfig outputConfig, {
     required Function(String imagePath) onItemDone,
   }) async {
-    for (final entry in _store.entries) {
-      final imagePath = entry.key;
+    for (final partition in partition(_store.entries, _batchSaveSize)) {
+      await Future.wait(
+        partition.map((entry) async {
+          final imagePath = entry.key;
 
-      final overlayImage = await _getOverlayImage();
-      final processedImage =
-          entry.value ?? await _processImage(imagePath, overlayImage);
+          final overlayImage = await _getOverlayImage();
+          final processedImage =
+              entry.value ?? await _processImage(imagePath, overlayImage);
 
-      final outputPath = path.join(
-        outputFolder,
-        path.setExtension(
-          path.basename(imagePath),
-          outputConfig.format.extension,
-        ),
+          final outputPath = path.join(
+            outputFolder,
+            path.setExtension(
+              path.basename(imagePath),
+              outputConfig.format.extension,
+            ),
+          );
+          await saveImage(processedImage, outputPath, outputConfig);
+
+          onItemDone(imagePath);
+        }),
       );
-      await saveImage(processedImage, outputPath, outputConfig);
-
-      onItemDone(imagePath);
     }
   }
 

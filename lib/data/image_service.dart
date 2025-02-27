@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:ui';
 import 'dart:async';
 
@@ -36,7 +37,7 @@ Future<void> saveImage(
         throw Exception('Failed to convert image to raw RGBA bytes');
       }
 
-      bytes = JpegEncoder().compress(
+      bytes = await _encodeJpeg(
         data.buffer.asUint8List(),
         image.width,
         image.height,
@@ -85,4 +86,15 @@ Future<Image> blendImages(Image baseImage, Image overlayImage) async {
   );
 
   return compositeImage;
+}
+
+Future<Uint8List> _encodeJpeg(
+  Uint8List pixels,
+  int width,
+  int height,
+  int quality,
+) async {
+  return await Isolate.run(() {
+    return JpegEncoder().compress(pixels, width, height, quality);
+  });
 }
