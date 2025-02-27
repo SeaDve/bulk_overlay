@@ -25,19 +25,19 @@ class HomeViewModel extends ChangeNotifier {
   String? get outputFolder => _outputFolder;
   set outputFolder(String? value) {
     _outputFolder = value;
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   OutputFormat get outputFormat => _outputFormat;
   set outputFormat(OutputFormat value) {
     _outputFormat = value;
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   int get jpgOutputQuality => _jpgOutputQuality;
   set jpgOutputQuality(int value) {
     _jpgOutputQuality = value;
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   double? get saveProgress => _saveProgress;
@@ -46,7 +46,7 @@ class HomeViewModel extends ChangeNotifier {
   String? get overlayImagePath => _imageRepository.overlayImagePath;
   set overlayImagePath(String? value) {
     _imageRepository.overlayImagePath = value;
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   bool get hasImage => _imageRepository.isNotEmpty;
@@ -67,17 +67,17 @@ class HomeViewModel extends ChangeNotifier {
 
   void addImages(List<String> paths) {
     _imageRepository.add(paths);
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   void removeImage(String imagePath) {
     _imageRepository.remove(imagePath);
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   void removeAllImages() {
     _imageRepository.removeAll();
-    _resetsaveProgress();
+    _resetSaveProgress();
   }
 
   Future<void> selectImages() async {
@@ -136,7 +136,7 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  void _resetsaveProgress() {
+  void _resetSaveProgress() {
     _saveProgress = null;
     _saveError = null;
     notifyListeners();
