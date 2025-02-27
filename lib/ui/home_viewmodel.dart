@@ -128,6 +128,7 @@ class HomeViewModel extends ChangeNotifier {
         _saveProgress = progress * 0.9 + 0.1;
         notifyListeners();
       });
+      assert(_saveProgress == 1.0);
     } on Exception catch (e) {
       _saveError = e.toString();
       _saveProgress = null;
