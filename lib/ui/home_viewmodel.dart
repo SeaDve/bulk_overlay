@@ -58,7 +58,7 @@ class HomeViewModel extends ChangeNotifier {
       _imageRepository.isNotEmpty &&
       _outputFolder != null &&
       _saveStatus is SaveStatusIdle;
-  bool get canRemoveImages => _saveStatus is! SaveStatusInProgress;
+  bool get canModifyConfiguration => _saveStatus is! SaveStatusInProgress;
 
   String? getImagePathAt(int index) => _imageRepository.getAt(index);
 

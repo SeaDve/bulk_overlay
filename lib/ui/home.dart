@@ -36,9 +36,10 @@ class Home extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                       ),
-                      onPressed: () async {
-                        await viewModel.selectImages();
-                      },
+                      onPressed:
+                          viewModel.canModifyConfiguration
+                              ? () async => await viewModel.selectImages()
+                              : null,
                     ),
                     TextButton.icon(
                       icon: Icon(Icons.delete),
@@ -48,10 +49,8 @@ class Home extends StatelessWidget {
                         maxLines: 2,
                       ),
                       onPressed:
-                          viewModel.hasImage && viewModel.canRemoveImages
-                              ? () {
-                                viewModel.removeAllImages();
-                              }
+                          viewModel.canModifyConfiguration && viewModel.hasImage
+                              ? () => viewModel.removeAllImages()
                               : null,
                     ),
                   ],
@@ -69,19 +68,18 @@ class Home extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                       ),
-                      onPressed: () async {
-                        await viewModel.selectOverlayImage();
-                      },
+                      onPressed:
+                          viewModel.canModifyConfiguration
+                              ? () async => await viewModel.selectOverlayImage()
+                              : null,
                     ),
                     TextButton.icon(
                       icon: Icon(Icons.delete),
                       label: Text('Remove overlay'),
                       onPressed:
-                          viewModel.overlayImagePath != null &&
-                                  viewModel.canRemoveImages
-                              ? () {
-                                viewModel.overlayImagePath = null;
-                              }
+                          viewModel.canModifyConfiguration &&
+                                  viewModel.overlayImagePath != null
+                              ? () => viewModel.overlayImagePath = null
                               : null,
                     ),
                   ],
@@ -122,10 +120,9 @@ class Home extends StatelessWidget {
                                     ),
                                     imageFuture: viewModel.getImage(imagePath),
                                     onRemove:
-                                        viewModel.canRemoveImages
-                                            ? () {
-                                              viewModel.removeImage(imagePath);
-                                            }
+                                        viewModel.canModifyConfiguration
+                                            ? () =>
+                                                viewModel.removeImage(imagePath)
                                             : null,
                                   ),
                                 );
@@ -183,16 +180,15 @@ class Home extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                   ),
-                  onPressed: () async {
-                    await viewModel.selectOutputFolder();
-                  },
+                  onPressed:
+                      viewModel.canModifyConfiguration
+                          ? () async => await viewModel.selectOutputFolder()
+                          : null,
                 ),
                 FilledButton(
                   onPressed:
                       viewModel.canSaveImages
-                          ? () async {
-                            await viewModel.saveImages();
-                          }
+                          ? () async => await viewModel.saveImages()
                           : null,
                   child: switch (saveStatus) {
                     SaveStatusIdle _ => Text('Save image(s)'),
