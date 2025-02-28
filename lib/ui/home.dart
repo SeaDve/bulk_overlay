@@ -144,6 +144,7 @@ class Home extends StatelessWidget {
                   children: [
                     DropdownMenu(
                       label: Text('Format'),
+                      enabled: viewModel.canModifyConfiguration,
                       initialSelection: viewModel.outputFormat,
                       dropdownMenuEntries: [
                         for (final format in OutputFormat.values)
@@ -156,6 +157,8 @@ class Home extends StatelessWidget {
                     viewModel.outputFormat == OutputFormat.jpg
                         ? DropdownMenu(
                           label: Text('Quality'),
+                          enabled: viewModel.canModifyConfiguration,
+                          keyboardType: TextInputType.number,
                           initialSelection: viewModel.jpgOutputQuality,
                           dropdownMenuEntries: [
                             for (int quality = 0; quality <= 100; quality++)
