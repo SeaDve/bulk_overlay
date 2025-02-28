@@ -97,40 +97,37 @@ class Home extends StatelessWidget {
                   children: [
                     if (!viewModel.hasImage)
                       Center(child: Text('No image added')),
-                    viewModel.hasImage
-                        ? Expanded(
-                          child: SizedBox(
-                            height: 120,
-                            child: ListView.builder(
-                              restorationId: 'processed_image_list',
-                              scrollDirection: Axis.horizontal,
-                              itemCount: viewModel.nImages,
-                              itemBuilder: (context, index) {
-                                final imagePath = viewModel.getImagePathAt(
-                                  index,
-                                );
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4.0,
+                    if (viewModel.hasImage)
+                      Expanded(
+                        child: SizedBox(
+                          height: 120,
+                          child: ListView.builder(
+                            restorationId: 'processed_image_list',
+                            scrollDirection: Axis.horizontal,
+                            itemCount: viewModel.nImages,
+                            itemBuilder: (context, index) {
+                              final imagePath = viewModel.getImagePathAt(index);
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
+                                child: ImageTile(
+                                  imagePath: imagePath!,
+                                  imageIsSaved: viewModel.isImageSaved(
+                                    imagePath,
                                   ),
-                                  child: ImageTile(
-                                    imagePath: imagePath!,
-                                    imageIsSaved: viewModel.isImageSaved(
-                                      imagePath,
-                                    ),
-                                    imageFuture: viewModel.getImage(imagePath),
-                                    onRemove:
-                                        viewModel.canModifyConfiguration
-                                            ? () =>
-                                                viewModel.removeImage(imagePath)
-                                            : null,
-                                  ),
-                                );
-                              },
-                            ),
+                                  imageFuture: viewModel.getImage(imagePath),
+                                  onRemove:
+                                      viewModel.canModifyConfiguration
+                                          ? () =>
+                                              viewModel.removeImage(imagePath)
+                                          : null,
+                                ),
+                              );
+                            },
                           ),
-                        )
-                        : SizedBox(),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -154,24 +151,23 @@ class Home extends StatelessWidget {
                         viewModel.outputFormat = value!;
                       },
                     ),
-                    viewModel.outputFormat == OutputFormat.jpg
-                        ? DropdownMenu(
-                          label: Text('Quality'),
-                          enabled: viewModel.canModifyConfiguration,
-                          keyboardType: TextInputType.number,
-                          initialSelection: viewModel.jpgOutputQuality,
-                          dropdownMenuEntries: [
-                            for (int quality = 0; quality <= 100; quality++)
-                              DropdownMenuEntry(
-                                value: quality,
-                                label: quality.toString(),
-                              ),
-                          ],
-                          onSelected: (value) {
-                            viewModel.jpgOutputQuality = value!;
-                          },
-                        )
-                        : SizedBox(),
+                    if (viewModel.outputFormat == OutputFormat.jpg)
+                      DropdownMenu(
+                        label: Text('Quality'),
+                        enabled: viewModel.canModifyConfiguration,
+                        keyboardType: TextInputType.number,
+                        initialSelection: viewModel.jpgOutputQuality,
+                        dropdownMenuEntries: [
+                          for (int quality = 0; quality <= 100; quality++)
+                            DropdownMenuEntry(
+                              value: quality,
+                              label: quality.toString(),
+                            ),
+                        ],
+                        onSelected: (value) {
+                          viewModel.jpgOutputQuality = value!;
+                        },
+                      ),
                   ],
                 ),
                 TextButton.icon(
