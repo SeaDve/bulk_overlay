@@ -58,37 +58,6 @@ class Home extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  spacing: 8,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton.icon(
-                      icon: Icon(Icons.file_open),
-                      label: Text(
-                        imageOptions.overlayPath == null
-                            ? "Select overlay image"
-                            : path.basename(imageOptions.overlayPath!),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                      onPressed:
-                          viewModel.canModifyConfiguration
-                              ? () async => await viewModel.selectOverlayImage()
-                              : null,
-                    ),
-                    TextButton.icon(
-                      icon: Icon(Icons.delete),
-                      label: Text('Remove overlay'),
-                      onPressed:
-                          viewModel.canModifyConfiguration &&
-                                  imageOptions.overlayPath != null
-                              ? () =>
-                                  viewModel.imageOptions = imageOptions
-                                      .copyWith(overlayPath: null)
-                              : null,
-                    ),
-                  ],
-                ),
                 Column(
                   children: [
                     Tooltip(
@@ -146,6 +115,37 @@ class Home extends StatelessWidget {
                                         )
                                 : null,
                       ),
+                    ),
+                  ],
+                ),
+                Row(
+                  spacing: 8,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      icon: Icon(Icons.file_open),
+                      label: Text(
+                        imageOptions.overlayPath == null
+                            ? "Select overlay image"
+                            : path.basename(imageOptions.overlayPath!),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                      onPressed:
+                          viewModel.canModifyConfiguration
+                              ? () async => await viewModel.selectOverlayImage()
+                              : null,
+                    ),
+                    TextButton.icon(
+                      icon: Icon(Icons.delete),
+                      label: Text('Remove overlay'),
+                      onPressed:
+                          viewModel.canModifyConfiguration &&
+                                  imageOptions.overlayPath != null
+                              ? () =>
+                                  viewModel.imageOptions = imageOptions
+                                      .copyWith(overlayPath: null)
+                              : null,
                     ),
                   ],
                 ),
