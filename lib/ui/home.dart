@@ -99,33 +99,27 @@ class Home extends StatelessWidget {
                       Center(child: Text('No image added')),
                     if (viewModel.hasImage)
                       Expanded(
-                        child: SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            restorationId: 'processed_image_list',
-                            scrollDirection: Axis.horizontal,
-                            itemCount: viewModel.nImages,
-                            itemBuilder: (context, index) {
-                              final imagePath = viewModel.getImagePathAt(index);
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4.0,
-                                ),
-                                child: ImageTile(
-                                  imagePath: imagePath!,
-                                  imageIsSaved: viewModel.isImageSaved(
-                                    imagePath,
-                                  ),
-                                  imageFuture: viewModel.getImage(imagePath),
-                                  onRemove:
-                                      viewModel.canModifyConfiguration
-                                          ? () =>
-                                              viewModel.removeImage(imagePath)
-                                          : null,
-                                ),
-                              );
-                            },
-                          ),
+                        child: ListView.builder(
+                          restorationId: 'processed_image_list',
+                          scrollDirection: Axis.horizontal,
+                          itemCount: viewModel.nImages,
+                          itemBuilder: (context, index) {
+                            final imagePath = viewModel.getImagePathAt(index);
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
+                              child: ImageTile(
+                                imagePath: imagePath!,
+                                imageIsSaved: viewModel.isImageSaved(imagePath),
+                                imageFuture: viewModel.getImage(imagePath),
+                                onRemove:
+                                    viewModel.canModifyConfiguration
+                                        ? () => viewModel.removeImage(imagePath)
+                                        : null,
+                              ),
+                            );
+                          },
                         ),
                       ),
                   ],
