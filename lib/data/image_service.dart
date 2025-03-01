@@ -48,37 +48,71 @@ Future<void> saveImage(
   await File(imagePath).writeAsBytes(bytes);
 }
 
-Future<Image> blendImages(Image baseImage, Image overlayImage) async {
+Future<Image> blendImages(
+  Image baseImage,
+  Offset baseImageOffset,
+  double baseImageScale,
+  Image? overlayImage,
+) async {
+  if (baseImageOffset == Offset.zero && overlayImage == null) {
+    return baseImage;
+  }
+
   final recorder = PictureRecorder();
-
   final canvas = Canvas(recorder);
-  canvas.drawImage(baseImage, Offset.zero, Paint());
 
-  final footerRatio = overlayImage.width / overlayImage.height;
-  final newFooterWidth = baseImage.width.toDouble();
-  final newFooterHeight = newFooterWidth / footerRatio;
-
-  final footerPosition = Offset(
-    0,
-    baseImage.height.toDouble() - newFooterHeight,
+  final scaledWidth = baseImage.width * baseImageScale;
+  final scaledHeight = baseImage.height * baseImageScale;
+  final offsetX = (baseImage.width - scaledWidth) / 2;
+  final offsetY = (baseImage.height - scaledHeight) / 2;
+  final denormalizedBaseImageOffset = Offset(
+    baseImageOffset.dx * baseImage.width,
+    -baseImageOffset.dy * baseImage.height,
   );
-  final overlayPaint = Paint()..blendMode = BlendMode.srcOver;
   canvas.drawImageRect(
-    overlayImage,
+    baseImage,
     Rect.fromLTWH(
       0,
       0,
-      overlayImage.width.toDouble(),
-      overlayImage.height.toDouble(),
+      baseImage.width.toDouble(),
+      baseImage.height.toDouble(),
     ),
     Rect.fromLTWH(
-      footerPosition.dx,
-      footerPosition.dy,
-      newFooterWidth,
-      newFooterHeight,
+      offsetX + denormalizedBaseImageOffset.dx,
+      offsetY + denormalizedBaseImageOffset.dy,
+      scaledWidth,
+      scaledHeight,
     ),
-    overlayPaint,
+    Paint(),
   );
+
+  if (overlayImage != null) {
+    final footerRatio = overlayImage.width / overlayImage.height;
+    final newFooterWidth = baseImage.width.toDouble();
+    final newFooterHeight = newFooterWidth / footerRatio;
+
+    final footerPosition = Offset(
+      0,
+      baseImage.height.toDouble() - newFooterHeight,
+    );
+    final overlayPaint = Paint()..blendMode = BlendMode.srcOver;
+    canvas.drawImageRect(
+      overlayImage,
+      Rect.fromLTWH(
+        0,
+        0,
+        overlayImage.width.toDouble(),
+        overlayImage.height.toDouble(),
+      ),
+      Rect.fromLTWH(
+        footerPosition.dx,
+        footerPosition.dy,
+        newFooterWidth,
+        newFooterHeight,
+      ),
+      overlayPaint,
+    );
+  }
 
   final compositeImage = await recorder.endRecording().toImage(
     baseImage.width,

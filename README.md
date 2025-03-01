@@ -6,5 +6,5 @@ It is designed to be used with a large number of images and a single overlay ima
 
 ## TODO
 1. Use CSD
-2. Add a way to offset base image, image filters/effects
+2. Add a way to add image filters/effects
 3. Save state

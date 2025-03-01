@@ -1,8 +1,10 @@
-import 'package:bulk_overlay/data/save_status.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
+import '../data/image_options.dart';
 import '../data/output_config.dart';
+import '../data/save_status.dart';
+import 'filter_slider.dart';
 import 'home_viewmodel.dart';
 import 'image_tile.dart';
 
@@ -14,6 +16,7 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final saveStatus = viewModel.saveStatus;
+    final imageOptions = viewModel.imageOptions;
 
     return Scaffold(
       body: Padding(
@@ -62,9 +65,9 @@ class Home extends StatelessWidget {
                     TextButton.icon(
                       icon: Icon(Icons.file_open),
                       label: Text(
-                        viewModel.overlayImagePath == null
+                        imageOptions.overlayPath == null
                             ? "Select overlay image"
-                            : path.basename(viewModel.overlayImagePath!),
+                            : path.basename(imageOptions.overlayPath!),
                         textAlign: TextAlign.center,
                         maxLines: 2,
                       ),
@@ -78,9 +81,71 @@ class Home extends StatelessWidget {
                       label: Text('Remove overlay'),
                       onPressed:
                           viewModel.canModifyConfiguration &&
-                                  viewModel.overlayImagePath != null
-                              ? () => viewModel.overlayImagePath = null
+                                  imageOptions.overlayPath != null
+                              ? () =>
+                                  viewModel.imageOptions = imageOptions
+                                      .copyWith(overlayPath: null)
                               : null,
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Tooltip(
+                      message: 'Horizontal offset',
+                      child: FilterSlider(
+                        icon: Icons.vertical_align_center,
+                        divisions: 20,
+                        min: -0.5,
+                        max: 0.5,
+                        label: imageOptions.offset.dy.toStringAsFixed(2),
+                        value: imageOptions.offset.dy,
+                        onChanged:
+                            viewModel.canModifyConfiguration &&
+                                    viewModel.hasImage
+                                ? (value) =>
+                                    viewModel.imageOptions = imageOptions
+                                        .copyWith(offset: Offset(0, value))
+                                : null,
+                        onReset:
+                            viewModel.canModifyConfiguration &&
+                                    imageOptions.offset !=
+                                        ImageOptions.defaultOffset
+                                ? () =>
+                                    viewModel.imageOptions = imageOptions
+                                        .copyWith(
+                                          offset: ImageOptions.defaultOffset,
+                                        )
+                                : null,
+                      ),
+                    ),
+                    Tooltip(
+                      message: 'Scale',
+                      child: FilterSlider(
+                        icon: Icons.zoom_in_map,
+                        divisions: 20,
+                        min: 0,
+                        max: 2,
+                        label: imageOptions.scale.toStringAsFixed(1),
+                        value: imageOptions.scale,
+                        onChanged:
+                            viewModel.canModifyConfiguration &&
+                                    viewModel.hasImage
+                                ? (value) =>
+                                    viewModel.imageOptions = imageOptions
+                                        .copyWith(scale: value)
+                                : null,
+                        onReset:
+                            viewModel.canModifyConfiguration &&
+                                    imageOptions.scale !=
+                                        ImageOptions.defaultScale
+                                ? () =>
+                                    viewModel.imageOptions = imageOptions
+                                        .copyWith(
+                                          scale: ImageOptions.defaultScale,
+                                        )
+                                : null,
+                      ),
                     ),
                   ],
                 ),

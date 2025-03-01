@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../data/image_options.dart';
 import '../data/image_repository.dart';
 import '../data/output_config.dart';
 import '../data/save_status.dart';
@@ -44,9 +45,9 @@ class HomeViewModel extends ChangeNotifier {
 
   SaveStatus get saveStatus => _saveStatus;
 
-  String? get overlayImagePath => _imageRepository.overlayImagePath;
-  set overlayImagePath(String? value) {
-    _imageRepository.overlayImagePath = value;
+  ImageOptions get imageOptions => _imageRepository.imageOptions;
+  set imageOptions(ImageOptions value) {
+    _imageRepository.imageOptions = value;
     _resetSaveStatus();
   }
 
@@ -54,7 +55,7 @@ class HomeViewModel extends ChangeNotifier {
   int get nImages => _imageRepository.length;
 
   bool get canSaveImages =>
-      _imageRepository.overlayImagePath != null &&
+      _imageRepository.imageOptions.overlayPath != null &&
       _imageRepository.isNotEmpty &&
       _outputFolder != null &&
       _saveStatus is SaveStatusIdle;
@@ -104,7 +105,9 @@ class HomeViewModel extends ChangeNotifier {
 
     if (result != null) {
       assert(result.isSinglePick);
-      overlayImagePath = (result.files.first.path);
+      imageOptions = imageOptions.copyWith(
+        overlayPath: result.files.first.path,
+      );
     }
   }
 

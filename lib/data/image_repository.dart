@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:path/path.dart' as path;
 import 'package:quiver/iterables.dart';
 
+import 'image_options.dart';
 import 'output_config.dart';
 import 'image_service.dart';
 
@@ -14,33 +15,29 @@ class ImageRepository {
   final _recentlyRequested = <String>{};
 
   Image? _overlayImage;
-  String? _overlayImagePath;
+  ImageOptions _imageOptions = ImageOptions();
 
   int get length => _store.length;
   bool get isEmpty => _store.isEmpty;
   bool get isNotEmpty => _store.isNotEmpty;
 
-  String? get overlayImagePath => _overlayImagePath;
-  set overlayImagePath(String? value) {
-    _overlayImagePath = value;
+  ImageOptions get imageOptions => _imageOptions;
+  set imageOptions(ImageOptions value) {
+    final prevValue = _imageOptions;
+
+    if (prevValue == value) {
+      return;
+    }
+
+    _imageOptions = value;
 
     for (final path in _store.keys) {
       _store[path] = null;
     }
 
-    _overlayImage = null;
-  }
-
-  Future<Image?> _getOverlayImage() async {
-    final overlayImagePath = _overlayImagePath;
-
-    if (overlayImagePath == null) {
-      return null;
+    if (prevValue.overlayPath != value.overlayPath) {
+      _overlayImage = null;
     }
-
-    _overlayImage ??= await loadImage(overlayImagePath);
-
-    return _overlayImage;
   }
 
   Future<void> saveAll(
@@ -53,9 +50,7 @@ class ImageRepository {
         partition.map((entry) async {
           final imagePath = entry.key;
 
-          final overlayImage = await _getOverlayImage();
-          final processedImage =
-              entry.value ?? await _processImage(imagePath, overlayImage);
+          final processedImage = entry.value ?? await _processImage(imagePath);
 
           final outputPath = path.join(
             outputFolder,
@@ -79,8 +74,7 @@ class ImageRepository {
       return _store[path];
     }
 
-    final overlayImage = await _getOverlayImage();
-    final processedImage = await _processImage(path, overlayImage);
+    final processedImage = await _processImage(path);
     _store[path] = processedImage;
 
     _ensureMaxLoadedImages();
@@ -118,14 +112,26 @@ class ImageRepository {
       _recentlyRequested.remove(oldestPath);
     }
   }
-}
 
-Future<Image> _processImage(String path, Image? overlayImage) async {
-  final image = await loadImage(path);
+  Future<Image?> _getOverlayImage() async {
+    final overlayImagePath = _imageOptions.overlayPath;
 
-  if (overlayImage == null) {
-    return image;
+    if (overlayImagePath == null) {
+      return null;
+    }
+
+    _overlayImage ??= await loadImage(overlayImagePath);
+
+    return _overlayImage;
   }
 
-  return await blendImages(image, overlayImage);
+  Future<Image> _processImage(String path) async {
+    final image = await loadImage(path);
+    return await blendImages(
+      image,
+      _imageOptions.offset,
+      _imageOptions.scale,
+      await _getOverlayImage(),
+    );
+  }
 }
