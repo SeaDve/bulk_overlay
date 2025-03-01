@@ -29,15 +29,17 @@ class FilterSlider extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(icon),
-        SizedBox(
-          width: 400,
-          child: Slider(
-            label: label,
-            min: min,
-            max: max,
-            divisions: divisions,
-            value: value,
-            onChanged: onChanged,
+        Expanded(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 240),
+            child: Slider(
+              label: label,
+              min: min,
+              max: max,
+              divisions: divisions,
+              value: value,
+              onChanged: onChanged,
+            ),
           ),
         ),
         IconButton(onPressed: onReset, icon: Icon(Icons.refresh)),
