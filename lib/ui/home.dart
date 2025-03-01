@@ -80,143 +80,141 @@ class Home extends StatelessWidget {
                       )
                       : Center(child: Text('No image added')),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 600),
-                child: Column(
-                  spacing: 8,
-                  children: [
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      children: [
-                        TextButton.icon(
-                          icon: Icon(Icons.add_a_photo),
-                          label: Text(
-                            "Add image(s)",
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                          ),
-                          onPressed:
-                              viewModel.canModifyConfiguration
-                                  ? () async => await viewModel.selectImages()
-                                  : null,
+            Container(
+              constraints: BoxConstraints(maxWidth: 600),
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                spacing: 8,
+                children: [
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    children: [
+                      TextButton.icon(
+                        icon: Icon(Icons.add_a_photo),
+                        label: Text(
+                          "Add image(s)",
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
                         ),
-                        TextButton.icon(
-                          icon: Icon(Icons.delete),
-                          label: Text(
-                            'Remove ${viewModel.nImages} image(s)',
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                          ),
-                          onPressed:
+                        onPressed:
+                            viewModel.canModifyConfiguration
+                                ? () async => await viewModel.selectImages()
+                                : null,
+                      ),
+                      TextButton.icon(
+                        icon: Icon(Icons.delete),
+                        label: Text(
+                          'Remove ${viewModel.nImages} image(s)',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                        onPressed:
+                            viewModel.canModifyConfiguration &&
+                                    viewModel.hasImage
+                                ? () => viewModel.removeAllImages()
+                                : null,
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Tooltip(
+                        message: 'Horizontal offset',
+                        child: FilterSlider(
+                          icon: Icons.vertical_align_center,
+                          divisions: 20,
+                          min: -0.5,
+                          max: 0.5,
+                          label: imageOptions.offset.dy.toStringAsFixed(2),
+                          value: imageOptions.offset.dy,
+                          onChanged:
                               viewModel.canModifyConfiguration &&
                                       viewModel.hasImage
-                                  ? () => viewModel.removeAllImages()
+                                  ? (value) =>
+                                      viewModel.imageOptions = imageOptions
+                                          .copyWith(offset: Offset(0, value))
                                   : null,
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Tooltip(
-                          message: 'Horizontal offset',
-                          child: FilterSlider(
-                            icon: Icons.vertical_align_center,
-                            divisions: 20,
-                            min: -0.5,
-                            max: 0.5,
-                            label: imageOptions.offset.dy.toStringAsFixed(2),
-                            value: imageOptions.offset.dy,
-                            onChanged:
-                                viewModel.canModifyConfiguration &&
-                                        viewModel.hasImage
-                                    ? (value) =>
-                                        viewModel.imageOptions = imageOptions
-                                            .copyWith(offset: Offset(0, value))
-                                    : null,
-                            onReset:
-                                viewModel.canModifyConfiguration &&
-                                        imageOptions.offset !=
-                                            ImageOptions.defaultOffset
-                                    ? () =>
-                                        viewModel.imageOptions = imageOptions
-                                            .copyWith(
-                                              offset:
-                                                  ImageOptions.defaultOffset,
-                                            )
-                                    : null,
-                          ),
-                        ),
-                        Tooltip(
-                          message: 'Scale',
-                          child: FilterSlider(
-                            icon: Icons.zoom_in_map,
-                            divisions: 20,
-                            min: 0,
-                            max: 2,
-                            label: imageOptions.scale.toStringAsFixed(1),
-                            value: imageOptions.scale,
-                            onChanged:
-                                viewModel.canModifyConfiguration &&
-                                        viewModel.hasImage
-                                    ? (value) =>
-                                        viewModel.imageOptions = imageOptions
-                                            .copyWith(scale: value)
-                                    : null,
-                            onReset:
-                                viewModel.canModifyConfiguration &&
-                                        imageOptions.scale !=
-                                            ImageOptions.defaultScale
-                                    ? () =>
-                                        viewModel.imageOptions = imageOptions
-                                            .copyWith(
-                                              scale: ImageOptions.defaultScale,
-                                            )
-                                    : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      children: [
-                        TextButton.icon(
-                          icon: Icon(Icons.file_open),
-                          label: Text(
-                            imageOptions.overlayPath == null
-                                ? "Select overlay image"
-                                : path.basename(imageOptions.overlayPath!),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                          ),
-                          onPressed:
-                              viewModel.canModifyConfiguration
-                                  ? () async =>
-                                      await viewModel.selectOverlayImage()
-                                  : null,
-                        ),
-                        TextButton.icon(
-                          icon: Icon(Icons.delete),
-                          label: Text('Remove overlay'),
-                          onPressed:
+                          onReset:
                               viewModel.canModifyConfiguration &&
-                                      imageOptions.overlayPath != null
+                                      imageOptions.offset !=
+                                          ImageOptions.defaultOffset
                                   ? () =>
                                       viewModel.imageOptions = imageOptions
-                                          .copyWith(overlayPath: null)
+                                          .copyWith(
+                                            offset: ImageOptions.defaultOffset,
+                                          )
                                   : null,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      Tooltip(
+                        message: 'Scale',
+                        child: FilterSlider(
+                          icon: Icons.zoom_in_map,
+                          divisions: 20,
+                          min: 0,
+                          max: 2,
+                          label: imageOptions.scale.toStringAsFixed(1),
+                          value: imageOptions.scale,
+                          onChanged:
+                              viewModel.canModifyConfiguration &&
+                                      viewModel.hasImage
+                                  ? (value) =>
+                                      viewModel.imageOptions = imageOptions
+                                          .copyWith(scale: value)
+                                  : null,
+                          onReset:
+                              viewModel.canModifyConfiguration &&
+                                      imageOptions.scale !=
+                                          ImageOptions.defaultScale
+                                  ? () =>
+                                      viewModel.imageOptions = imageOptions
+                                          .copyWith(
+                                            scale: ImageOptions.defaultScale,
+                                          )
+                                  : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    children: [
+                      TextButton.icon(
+                        icon: Icon(Icons.file_open),
+                        label: Text(
+                          imageOptions.overlayPath == null
+                              ? "Select overlay image"
+                              : path.basename(imageOptions.overlayPath!),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                        onPressed:
+                            viewModel.canModifyConfiguration
+                                ? () async =>
+                                    await viewModel.selectOverlayImage()
+                                : null,
+                      ),
+                      TextButton.icon(
+                        icon: Icon(Icons.delete),
+                        label: Text('Remove overlay'),
+                        onPressed:
+                            viewModel.canModifyConfiguration &&
+                                    imageOptions.overlayPath != null
+                                ? () =>
+                                    viewModel.imageOptions = imageOptions
+                                        .copyWith(overlayPath: null)
+                                : null,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            Container(
+              constraints: BoxConstraints(maxWidth: 600),
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 spacing: 8,
                 children: [
