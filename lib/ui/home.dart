@@ -19,11 +19,35 @@ class Home extends StatelessWidget {
     final imageOptions = viewModel.imageOptions;
 
     return Scaffold(
-      body: Padding(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed:
+            viewModel.canSaveImages
+                ? () async => await viewModel.saveImages()
+                : null,
+        icon: switch (saveStatus) {
+          SaveStatusIdle _ => Icon(Icons.save),
+          SaveStatusSuccess _ => Icon(Icons.check),
+          SaveStatusFailure _ => Icon(Icons.error),
+          SaveStatusInProgress _ => null,
+        },
+        label: switch (saveStatus) {
+          SaveStatusIdle _ => Text('Save image(s)'),
+          SaveStatusSuccess _ => Text('All imaged saved'),
+          SaveStatusFailure _ => Text(saveStatus.error),
+          SaveStatusInProgress _ => SizedBox(
+            width: 24,
+            height: 24,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: CircularProgressIndicator(value: saveStatus.progress),
+            ),
+          ),
+        },
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 48.0),
         child: Column(
-          spacing: 24,
-          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 48,
           children: [
             Column(
               spacing: 8,
@@ -151,45 +175,35 @@ class Home extends StatelessWidget {
                 ),
               ],
             ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  spacing: 8,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (!viewModel.hasImage)
-                      Center(child: Text('No image added')),
-                    if (viewModel.hasImage)
-                      Expanded(
-                        child: ListView.builder(
-                          restorationId: 'processed_image_list',
-                          scrollDirection: Axis.horizontal,
-                          itemCount: viewModel.nImages,
-                          itemBuilder: (context, index) {
-                            final imagePath = viewModel.getImagePathAt(index);
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                              ),
-                              child: ImageTile(
-                                imagePath: imagePath!,
-                                imageIsSaved: viewModel.isImageSaved(imagePath),
-                                imageFuture: viewModel.getImage(imagePath),
-                                onRemove:
-                                    viewModel.canModifyConfiguration
-                                        ? () => viewModel.removeImage(imagePath)
-                                        : null,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+            Container(
+              height: 240,
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child:
+                  viewModel.hasImage
+                      ? ListView.builder(
+                        restorationId: 'processed_image_list',
+                        scrollDirection: Axis.horizontal,
+                        itemCount: viewModel.nImages,
+                        itemBuilder: (context, index) {
+                          final imagePath = viewModel.getImagePathAt(index);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                            ),
+                            child: ImageTile(
+                              imagePath: imagePath!,
+                              imageIsSaved: viewModel.isImageSaved(imagePath),
+                              imageFuture: viewModel.getImage(imagePath),
+                              onRemove:
+                                  viewModel.canModifyConfiguration
+                                      ? () => viewModel.removeImage(imagePath)
+                                      : null,
+                            ),
+                          );
+                        },
+                      )
+                      : Center(child: Text('No image added')),
             ),
             Column(
               spacing: 8,
@@ -242,27 +256,6 @@ class Home extends StatelessWidget {
                       viewModel.canModifyConfiguration
                           ? () async => await viewModel.selectOutputFolder()
                           : null,
-                ),
-                FilledButton(
-                  onPressed:
-                      viewModel.canSaveImages
-                          ? () async => await viewModel.saveImages()
-                          : null,
-                  child: switch (saveStatus) {
-                    SaveStatusIdle _ => Text('Save image(s)'),
-                    SaveStatusSuccess _ => Text('All imaged saved'),
-                    SaveStatusFailure _ => Text(saveStatus.error),
-                    SaveStatusInProgress _ => SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: CircularProgressIndicator(
-                          value: saveStatus.progress,
-                        ),
-                      ),
-                    ),
-                  },
                 ),
               ],
             ),
