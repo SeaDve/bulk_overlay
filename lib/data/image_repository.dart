@@ -127,6 +127,11 @@ class ImageRepository {
 
   Future<Image> _processImage(String path) async {
     final image = await loadImage(path);
+
+    if (_imageOptions == ImageOptions()) {
+      return image;
+    }
+
     return await blendImages(
       image,
       _imageOptions.offset,

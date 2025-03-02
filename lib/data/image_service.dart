@@ -54,10 +54,6 @@ Future<Image> blendImages(
   double baseImageScale,
   Image? overlayImage,
 ) async {
-  if (baseImageOffset == Offset.zero && overlayImage == null) {
-    return baseImage;
-  }
-
   final recorder = PictureRecorder();
   final canvas = Canvas(recorder);
 
