@@ -143,6 +143,7 @@ class HomeViewModel extends ChangeNotifier {
         },
       );
       _saveStatus = SaveStatusSuccess();
+      notifyListeners();
     } on Exception catch (e) {
       _saveStatus = SaveStatusFailure(e.toString());
       notifyListeners();
